@@ -10,6 +10,7 @@
 #include <MsgBoxConstants.au3>
 #include <EditConstants.au3>
 #include <FontConstants.au3>
+#include "NoFocusLines.au3"
 #cs
     Title:          DiscEx Batch
     Filename:       DiscExBatch.au3
@@ -32,13 +33,13 @@ Global $vFlush,$vBackup,$vAlign,$vFormat
 $Form1 = GUICreate("Gamecube ISO batch converter", 400, 150, 212, 156)
 GUISetBkColor(0x404040)
 GUICtrlSetDefColor(0xEDEDED)
-GUICtrlSetDefBkColor(0x000000)
+GUICtrlSetDefBkColor(0xcc0000)
 Local $sFont = "Comic Sans MS"
 GUISetFont(9,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
 Global $icon = @ScriptDir&"\res\gcit.ico"
 If Not @Compiled Then GUISetIcon($icon)
 GUISetIcon($icon, -1)
-$lFormat = GUICtrlCreateLabel("Format",235, 26, 100, 21)
+$lFormat = GUICtrlCreateLabel("Format",235, 26,60, 21)
 GUICtrlSetBkColor(-1,0x404040)
 $Format = GUICtrlCreateCombo("GCReEx", 136, 72, 89, 25,BitOR($ES_READONLY, $CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 GUICtrlSetData($Format,"DiscEx|FullISO","DiscEx")
@@ -46,19 +47,20 @@ GUICtrlSetTip(-1, "Set the destination format. Default is Trimmed ISO.")
 $Flush = GUICtrlCreateCheckbox("",16, 24, 17, 17)
 GUICtrlSetBkColor(-1,0x404040)
 GUICtrlSetTip(-1, "Flush the file buffers so that the SD card can be ejected almost immediately after the operation.")
-$lFlush = GUICtrlCreateLabel("Flush",36, 26, 100, 21)
+$lFlush = GUICtrlCreateLabel("Flush",36, 26, 60, 21)
 GUICtrlSetBkColor(-1,0x404040)
 $Backup = GUICtrlCreateCheckbox("", 16, 72, 17, 17)
 GUICtrlSetBkColor(-1,0x404040)
 GUICtrlSetTip(-1, "Save a backup of the original fst.bin and boot.bin files inside the trimmed ISO.")
-$lBackup = GUICtrlCreateLabel("Backup",36, 76, 100, 21)
+$lBackup = GUICtrlCreateLabel("Backup",36, 76, 60, 21)
 GUICtrlSetBkColor(-1,0x404040)
-$lAlign = GUICtrlCreateLabel("Align",235, 76, 100, 21)
+$lAlign = GUICtrlCreateLabel("Align",235, 76, 60, 21)
 GUICtrlSetBkColor(-1,0x404040)
 $Align = GUICtrlCreateCombo("4", 136, 24, 89, 25,BitOR($ES_READONLY, $CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 GUICtrlSetData($Align, "32|32k", "32k")
 GUICtrlSetTip(-1, "Set the alignment used in the ISO. 4 bytes, 32 bytes or 32KB. Default is auto.")
-$run = GUICtrlCreateButton("Start", 300, 10, 90, 90)
+$run = GUICtrlCreateButton("Start", 300, 10, 90, 90, BitOR($BS_FLAT,$WS_CLIPSIBLINGS))
+_NoFocusLines_Set($run)
 GUICtrlSetTip(-1, "Set the output location.")
 $StatusBar = _GUICtrlStatusBar_Create($Form1)
 _GUICtrlStatusBar_SetText($StatusBar, "Ready")
