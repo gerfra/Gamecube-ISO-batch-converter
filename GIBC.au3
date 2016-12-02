@@ -1,5 +1,7 @@
 #NoTrayIcon
-#AutoIt3Wrapper_Icon=res\gcit.ico
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=res\gcitb.ico
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <ButtonConstants.au3>
 #include <ComboConstants.au3>
 #include <GUIConstantsEx.au3>
@@ -24,9 +26,10 @@
 DirCreate(@ScriptDir&"\res")
 Local $bFileInstall = True
 If $bFileInstall Then
-FileInstall("E:\DEVREPO\gamecube_tool\res\gcit.ico",@ScriptDir&"\res\gcit.ico")
+FileInstall("E:\DEVREPO\gamecube_tool\res\gcitb.ico",@ScriptDir&"\res\gcitb.ico")
 EndIf
 Global Const $sFilePath = @ScriptDir&"\log.txt"
+Global $aArray
 Global $7zip = @ScriptDir&"\gcit.exe",$StatusBar
 Global $vFlush,$vBackup,$vAlign,$vFormat
 #Region ### START Koda GUI section ### Form=
@@ -36,7 +39,7 @@ GUICtrlSetDefColor(0xEDEDED)
 GUICtrlSetDefBkColor(0xcc0000)
 Local $sFont = "Comic Sans MS"
 GUISetFont(9,  $FW_NORMAL, $GUI_FONTUNDER, $sFont)
-Global $icon = @ScriptDir&"\res\gcit.ico"
+Global $icon = @ScriptDir&"\res\gcitb.ico"
 If Not @Compiled Then GUISetIcon($icon)
 GUISetIcon($icon, -1)
 $lFormat = GUICtrlCreateLabel("Format",235, 26,60, 21)
@@ -84,32 +87,53 @@ While 1
 			EndIf
 			$vAlign = " -a "&GUICtrlRead($Align)
 			$vFormat = " -f "&GUICtrlRead($Format)
-			$source = FileSelectFolder("Select source Folder",@ScriptDir)
-			$iso = _FileListToArrayRec($source,"*.iso",1,0,1,1)
+			Local $spFile
+			$mFile = FileOpenDialog("apri", @ScriptDir & "", "Images (*.iso)", 1 + 4 )
+			If @error Then
+				_GUICtrlStatusBar_SetText($StatusBar,"Please select one ISO")
+			Else
+				$iso = StringSplit($mFile, "|")
+				 If UBound($iso) = 2 Then
+					 ConsoleWrite($iso[1]&@CRLF)
+					 _ArrayDelete($iso, 0)
+					 Dim $aItems[UBound($iso)]
+					  _ArrayPush($aItems,$iso[0])
+				 Else
+					 $path = $iso[1]
+					 _ArrayDelete($iso, 0)
+					 _ArrayDelete($iso, 0)
+					Dim $aItems[UBound($iso)]
+					 For $x = 0 to UBound($iso)-1
+						 _ArrayPush($aItems,$path&"\"&$iso[$x])
+						 ConsoleWrite($path&"\"&$iso[$x]&@CRLF)
+					 Next
+				EndIf
+			EndIf
 			$dest = FileSelectFolder("Select destination Folder",@ScriptDir)
-			If (($source ="" ) or ($dest = "")) Then
+			If ($dest = "") Then
 				_GUICtrlStatusBar_SetText($StatusBar,"Select a valid folder!!!")
 			Else
-				start($iso,$dest,$vBackup,$vFlush,$vAlign,$vFormat)
+				start($aItems,$dest,$vBackup,$vFlush,$vAlign,$vFormat)
 			EndIf
 	EndSwitch
 WEnd
 
-Func start($iso,$dest,$vFlush,$vBackup,$vAlign,$vFormat)
+Func start($aItems,$dest,$vFlush,$vBackup,$vAlign,$vFormat)
 	Local $ok = 0,$err = 0
 	$hFileOpen = FileOpen($sFilePath, 2)
-		For $x = 1 to UBound($iso)-1
-			_GUICtrlStatusBar_SetText($StatusBar,"Wait write "&$iso[$x])
-			ConsoleWrite('"'&$iso[$x]&'"'&" -aq "&$vBackup&$vFlush&$vFormat&$vAlign&" -d "&'"'&$dest&'"'&@CRLF)
-			$PID = ShellExecuteWait($7zip,'"'&$iso[$x]&'"'&" -aq "&$vBackup&$vFlush&$vFormat&$vAlign&" -d "&'"'&$dest&'"',@ScriptDir,"",@SW_HIDE)
+	$PID = 1
+		For $x = 0 to UBound($aItems)-1
+			_GUICtrlStatusBar_SetText($StatusBar,"Wait write "&$aItems[$x])
+			ConsoleWrite('"'&$aItems[$x]&'"'&" -aq "&$vBackup&$vFlush&$vFormat&$vAlign&" -d "&'"'&$dest&'"'&@CRLF)
+			$PID = ShellExecuteWait($7zip,'"'&$aItems[$x]&'"'&" -aq "&$vBackup&$vFlush&$vFormat&$vAlign&" -d "&'"'&$dest&'"',@ScriptDir,"",@SW_HIDE)
 			If $PID = 1 Then
 				$err+= 1
-				FileWriteLine($hFileOpen, "Error code"&$PID&" Doesn't work "&$iso[$x]&@CRLF)
-				ConsoleWrite("Err "&$PID&" Doesn't work "&$iso[$x]&@CRLF)
+				FileWriteLine($hFileOpen, "Error Doesn't work "&$aItems[$x]&@CRLF)
+				ConsoleWrite("Err "&$PID&" Doesn't work "&$aItems[$x]&@CRLF)
 			Else
 				$ok+=1
-				FileWriteLine($hFileOpen, "Finish code"&$PID&" Game "&$iso[$x]&@CRLF)
-				ConsoleWrite("Finish "&$PID&" Game "&$iso[$x]&@CRLF)
+				FileWriteLine($hFileOpen, "Finish Game "&$aItems[$x]&@CRLF)
+				ConsoleWrite("Finish "&$PID&" Game "&$aItems[$x]&@CRLF)
 			EndIf
 		Next
 		_GUICtrlStatusBar_SetText($StatusBar,"Finish tot."&$ok&" || Error tot."&$err)
